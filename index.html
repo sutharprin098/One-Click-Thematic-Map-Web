@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Click Thematic Map – QGIS Plugin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* --- VARIABLES & RESET --- */
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --accent: #22c55e;
+  --accent-hover: #16a34a;
+  --bg-light: #f8fafc;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --card-bg: #ffffff;
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-main);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* --- UTILITIES --- */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--text-main);
+}
+
+/* --- HEADER / HERO SECTION --- */
+header {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: white;
+  padding: 80px 0 120px;
+  text-align: center;
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+}
+
+.logo-box {
+  background: white;
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 20px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  padding: 10px; /* Padding for the image inside */
+}
+
+.logo-box img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+header h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 15px;
+  letter-spacing: -0.02em;
+}
+
+header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  font-weight: 300;
+}
+
+.btn-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.4);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px rgba(34, 197, 94, 0.5);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- MOCKUP AREA (Screenshot) --- */
+.hero-mockup {
+  margin: -80px auto 60px;
+  max-width: 850px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  padding: 10px;
+  position: relative;
+  z-index: 2;
+  border: 1px solid #e2e8f0;
+}
+
+.mockup-inner {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+}
+
+.mockup-inner img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* --- FEATURES GRID --- */
+.section-padding {
+  padding: 80px 0;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.feature-card {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.icon-box {
+  width: 50px;
+  height: 50px;
+  background: #eff6ff;
+  color: var(--primary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+  color: var(--text-main);
+}
+
+.feature-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* --- STEPS / HOW IT WORKS --- */
+.steps-container {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid #e2e8f0;
+}
+
+.step-item {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 25px;
+  align-items: flex-start;
+}
+
+.step-item:last-child {
+  margin-bottom: 0;
+}
+
+.step-number {
+  background: var(--primary);
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.step-content h4 {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+.step-content p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* --- INSTALLATION (CODE STYLE) --- */
+.install-section {
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 16px;
+  padding: 40px;
+  position: relative;
+  font-family: 'Courier New', monospace;
+  overflow-x: auto; /* For small screens if text is long */
+}
+
+.cmd-line {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 15px;
+  align-items: baseline;
+}
+.cmd-line:last-child { border: none; padding-bottom: 0; }
+.cmd-step { color: var(--accent); font-weight: bold; min-width: 30px; }
+.cmd-text { opacity: 0.9; }
+
+/* --- FOOTER --- */
+footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 60px;
+  background: #fff;
+}
+footer a { 
+    color: var(--primary); 
+    text-decoration: none; 
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+footer a:hover { text-decoration: underline; }
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+/* --- ANIMATION UTILS --- */
+.fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- RESPONSIVE IMPROVEMENTS --- */
+/* Tablet and smaller laptops */
+@media (max-width: 900px) {
+  header h1 { font-size: 2.5rem; }
+  header { padding: 70px 0 110px; }
+  .hero-mockup { margin-top: -70px; }
+}
+
+/* Mobile Phones */
+@media (max-width: 600px) {
+  h2 { font-size: 1.8rem; margin-bottom: 2rem; }
+  
+  header { padding: 50px 0 90px; }
+  header h1 { font-size: 2rem; }
+  header p { font-size: 1rem; margin-bottom: 30px; }
+  .logo-box { width: 90px; height: 90px; }
+  
+  /* Make buttons stack on small screens */
+  .btn-group { flex-direction: column; gap: 10px; }
+  .btn { width: 100%; justify-content: center; }
+  
+  .hero-mockup { margin-top: -50px; margin-bottom: 40px; }
+  .section-padding { padding: 50px 0; }
+  
+  .steps-container, .install-section { padding: 25px; }
+  .step-item { flex-direction: column; gap: 10px; }
+  
+  .footer-links { flex-direction: column; gap: 10px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <div class="logo-box">
+      <img src="icon.png" alt="One Click Thematic Map Logo">
+    </div>
+
+    <h1>One Click Thematic Map</h1>
+
+    <p>
+      Instant visualization for QGIS. 
+      Designed for students, beginners, and GIS professionals who need speed.
+    </p>
+
+    <div class="btn-group">
+      <a class="btn btn-primary" href="https://raw.githubusercontent.com/sutharprin098/OneClick-Thematic-Map-file/d1635516d361142d0d7ef99917e04e2510ea3b03/one_click_thematic_map.zip">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Download Plugin
+      </a>
+      <a class="btn btn-secondary" href="#how-it-works">
+        How it Works
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero-mockup fade-up">
+    <div class="mockup-inner">
+      <img src="img.png" alt="Screenshot of One Click Thematic Map Plugin Dialog Box in QGIS">
+    </div>
+  </div>
+</div>
+
+<section class="section-padding">
+  <div class="container">
+    <h2>Why use this plugin?</h2>
+
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <div class="icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        </div>
+        <h3>Smart Detection</h3>
+        <p>Automatically detects layers with numeric fields. No more scrolling through endless text fields.</p>
+      </div>
+
+      <div class="feature-card fade-up">
+        <div class="icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="14.31" y1="8" x2="20.05" y2="17.94"></line><line x1="9.69" y1="8" x2="21.17" y2="8"></line><line x1="7.38" y1="12" x2="13.12" y2="2.06"></line><line x1="9.69" y1="16" x2="3.95" y2="6.06"></line><line x1="14.31" y1="16" x2="2.83" y2="16"></line><line x1="16.62" y1="12" x2="10.88" y2="21.94"></line></svg>
+        </div>
+        <h3>Auto Colors</h3>
+        <p>Pre-loaded with multiple professional color schemes (Reds, Blues, Spectral) for instant styling.</p>
+      </div>
+
+      <div class="feature-card fade-up">
+        <div class="icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <h3>Robust Handling</h3>
+        <p>NULL values are handled safely, ensuring your map never crashes due to missing data.</p>
+      </div>
+
+      <div class="feature-card fade-up">
+        <div class="icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h3>One Click</h3>
+        <p>Select your field, pick a color, and click OK. The simplest workflow in QGIS.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding" id="how-it-works" style="background:#fff;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 50px; align-items: start;">
+      
+      <div class="fade-up">
+        <h2>How It Works</h2>
+        <div class="steps-container">
+          
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Load Layer</h4>
+              <p>Open QGIS and load your vector/shapefile.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Open Plugin</h4>
+              <p>Find the icon in the toolbar or Plugins menu.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Configure</h4>
+              <p>Select the numeric field and your preferred color.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h4>Done!</h4>
+              <p>Click OK to generate the thematic map instantly.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="fade-up">
+        <h2>Installation</h2>
+        <div class="install-section">
+          
+          <div class="cmd-line">
+            <span class="cmd-step">01</span>
+            <span class="cmd-text">Download the ZIP file from the button above.</span>
+          </div>
+
+          <div class="cmd-line">
+            <span class="cmd-step">02</span>
+            <span class="cmd-text">Open QGIS → Plugins → Manage and Install.</span>
+          </div>
+
+          <div class="cmd-line">
+            <span class="cmd-step">03</span>
+            <span class="cmd-text">Select "Install from ZIP" tab.</span>
+          </div>
+
+          <div class="cmd-line">
+            <span class="cmd-step">04</span>
+            <span class="cmd-text">Browse file & Click "Install Plugin".</span>
+          </div>
+
+          <div class="cmd-line">
+            <span class="cmd-step">05</span>
+            <span class="cmd-text">Enjoy One Click Thematic Mapping!</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Developed with ❤️ by Prince</p>
+    
+    <div class="footer-links">
+        <a href="https://github.com/sutharprin098/OneClick-Thematic-Map-file" target="_blank">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            GitHub Repo
+        </a>
+        
+        <a href="https://www.linkedin.com/in/prince-suthar-79552428a" target="_blank">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+            LinkedIn Profile
+        </a>
+    </div>
+
+  </div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
